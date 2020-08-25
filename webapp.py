@@ -53,12 +53,6 @@ def inject_logged_in():
 @app.route('/')
 def home():
     return render_template('home.html')
-    '''
-    if 'github_token' in session:
-        me = github.get('user')
-        return jsonify(me.data)
-    return redirect(url_for('login'))
-    '''
 
 @app.route('/login')
 def login():
@@ -70,16 +64,11 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('home'))
 
-
-#@app.route('/logout')
-#def logout():
-#    session.pop('github_token', None)
-#    return redirect(url_for('index'))
-
-
 @app.route('/login/authorized')
 def authorized():
+    # get response
     resp = github.authorized_response()
+    # handle no response
     if resp is None:
         session.clear()
         login_error_message = 'Access denied: reason=%s error=%s full=%s' % (
@@ -90,6 +79,7 @@ def authorized():
         flash(login_error_message, 'error')
     else:
         try:
+            # check if user is logged in, and put the user data into the session
             session['github_token'] = (resp['access_token'], '')
             session['user_data']=github.get('user').data
             flash('You were successfully logged in')
@@ -104,7 +94,7 @@ def renderPage1():
     if 'user_data' in session:
         user_data_pprint = pprint.pformat(session['user_data'])
     else:
-        user_data_pprint = '';
+        user_data_pprint = ''
     return render_template('page1.html',dump_user_data=user_data_pprint)
 
 @app.route('/page2')
